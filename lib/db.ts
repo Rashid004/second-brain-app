@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = "mongodb://localhost:27017/brainly";
+const MONGODB_URI =
+  "mongodb+srv://rashidansari3868038:5jSGP7Vpg8TpMC8B@cluster0.gamfora.mongodb.net/second-brain";
 
 const connectDB = async (): Promise<void> => {
   try {

@@ -1,77 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { verifyToken } from "@/helper/token";
 import User from "@/models/userSchema";
 import connectDB from "@/lib/db";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-export const authMiddleware = async (req: NextRequest) => {
+export const protectedRoute = async (req: NextRequest) => {
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.startsWith("Bearer")
     ? authHeader.split(" ")[1]
     : null;
 
   if (!token) {
-    return {
-      error: NextResponse.json(
-        { error: "Access token required" },
-        { status: 401 }
-      ),
-      user: null
-    };
+    throw new Error("Access token required");
   }
 
   try {
     await connectDB();
     const decoded = verifyToken(token, JWT_SECRET) as any;
+    const user = await User.findById(decoded.userId);
 
-    const currentUser = await User.findById(decoded.userId);
-
-    if (!currentUser) {
-      return {
-        error: NextResponse.json(
-          { error: "User not found" },
-          { status: 401 }
-        ),
-        user: null
-      };
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    // Return success with user info
-    return {
-      error: null,
-      user: currentUser
-    };
-    
+    return user;
   } catch (error) {
-    console.error("Auth middleware error:", error);
-
     if (error instanceof Error) {
       if (error.name === "TokenExpiredError") {
-        return {
-          error: NextResponse.json(
-            { error: "Token expired" },
-            { status: 401 }
-          ),
-          user: null
-        };
+        throw new Error("Token expired");
       } else if (error.name === "JsonWebTokenError") {
-        return {
-          error: NextResponse.json(
-            { error: "Invalid token" },
-            { status: 401 }
-          ),
-          user: null
-        };
+        throw new Error("Invalid token");
       }
+      throw error;
     }
-
-    return {
-      error: NextResponse.json(
-        { error: "Authentication failed" },
-        { status: 401 }
-      ),
-      user: null
-    };
+    throw new Error("Authentication failed");
   }
 };

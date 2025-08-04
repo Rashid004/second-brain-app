@@ -1,16 +1,11 @@
 import connectDB from "@/lib/db";
 import Content from "@/models/contentSchema";
 import { NextRequest, NextResponse } from "next/server";
-import { authMiddleware } from "@/middleware/authMiddleware";
+import { protectedRoute } from "@/middleware/authMiddleware";
 
-export const POST = async (req: NextRequest) => {
+export async function POST(req: NextRequest) {
   try {
-    // Apply auth middleware
-    const authResult = await authMiddleware(req);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
+    const user = await protectedRoute(req);
     await connectDB();
     const body = await req.json();
     const { link, title, contentType, description, tags } = body;
@@ -25,7 +20,6 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // Validate URL format
     try {
       new URL(link);
     } catch {
@@ -35,25 +29,14 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    console.log('Creating content with data:', {
-      link,
-      title,
-      contentType,
-      description,
-      tags: tags || [],
-      user: authResult.user._id,
-    });
-
     const newContent = await Content.create({
       link,
       title,
       contentType,
       description,
       tags: tags || [],
-      user: authResult.user._id,
+      user: user._id,
     });
-
-    console.log('Content created:', newContent);
 
     return NextResponse.json(
       {
@@ -64,6 +47,16 @@ export const POST = async (req: NextRequest) => {
     );
   } catch (error) {
     console.error("Content creation error:", error);
+
+    if (
+      error instanceof Error &&
+      (error.message === "Access token required" ||
+        error.message === "Token expired" ||
+        error.message === "Invalid token" ||
+        error.message === "User not found")
+    ) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
 
     if (error instanceof Error) {
       if (error.message.includes("validation")) {
@@ -86,34 +79,26 @@ export const POST = async (req: NextRequest) => {
       { status: 500 },
     );
   }
-};
+}
 
-export const GET = async (req: NextRequest) => {
+export async function GET(req: NextRequest) {
   try {
-    // Apply auth middleware
-    const authResult = await authMiddleware(req);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
+    const user = await protectedRoute(req);
     await connectDB();
 
-    // Get query parameters
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
     const contentType = searchParams.get("contentType");
     const limit = parseInt(searchParams.get("limit") || "10");
     const page = parseInt(searchParams.get("page") || "1");
 
-    // Build filter
     const filter: any = {};
     if (userId) filter.user = userId;
     if (contentType) filter.contentType = contentType;
 
-    // Calculate pagination
     const skip = (page - 1) * limit;
 
-    console.log('Fetching content with filter:', filter);
+    console.log("Fetching content with filter:", filter);
 
     const content = await Content.find(filter)
       .populate("user", "userName email")
@@ -124,13 +109,11 @@ export const GET = async (req: NextRequest) => {
 
     const total = await Content.countDocuments(filter);
 
-    console.log('Content found:', content.length, 'items');
-    console.log('Sample content:', content[0]);
-
     return NextResponse.json(
       {
         message: "Content retrieved successfully",
         content,
+        length: content.length,
         pagination: {
           page,
           limit,
@@ -143,6 +126,16 @@ export const GET = async (req: NextRequest) => {
   } catch (error) {
     console.error("Content retrieval error:", error);
 
+    if (
+      error instanceof Error &&
+      (error.message === "Access token required" ||
+        error.message === "Token expired" ||
+        error.message === "Invalid token" ||
+        error.message === "User not found")
+    ) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
@@ -152,4 +145,4 @@ export const GET = async (req: NextRequest) => {
       { status: 500 },
     );
   }
-};
+}

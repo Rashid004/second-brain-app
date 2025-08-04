@@ -2,7 +2,7 @@ import connectDB from "@/lib/db";
 import Tag from "@/models/tagSchema";
 import { NextResponse } from "next/server";
 
-export const POST = async (req: any) => {
+export async function POST(req: any) {
   try {
     await connectDB();
     const body = await req.json();
@@ -30,4 +30,4 @@ export const POST = async (req: any) => {
     console.error("Tag creation error:", error);
   }
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-};
+}

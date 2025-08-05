@@ -1,69 +1,98 @@
-import Link from 'next/link';
+"use client";
+import {
+  IconBrandX,
+  IconBrandYoutube,
+  IconFileText,
+  IconHash,
+  IconLayoutDashboard,
+  IconLink,
+  IconLogout,
+  IconX,
+} from "@tabler/icons-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-export default function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export default function Sidebar({ onClose }: SidebarProps = {}) {
+  const pathName = usePathname();
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-semibold text-gray-900">Second Brain</h1>
+    <aside className="flex h-full w-64 flex-col border-r border-gray-200 bg-white">
+      <div className="flex items-center justify-between gap-2 p-6">
+        <div className="flex items-center gap-2">
+          <img src="/brainly.png" alt="Brainly Logo" className="h-8 w-auto" />
+          <h1 className="text-2xl font-semibold text-purple-900">Brainly</h1>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-gray-600 md:hidden"
+          >
+            <IconX className="h-6 w-6" />
+          </button>
+        )}
       </div>
-      
-      <nav className="flex-1 p-4 space-y-2">
-        <Link 
-          href="/" 
-          className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900"
-        >
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-          </svg>
-          All Content
-        </Link>
-        
-        <Link 
-          href="/create" 
-          className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900"
-        >
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Create Post
-        </Link>
-        
-        <Link 
-          href="/tags" 
-          className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900"
-        >
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
-          Tags
-        </Link>
-        
-        <Link 
-          href="/shared" 
-          className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900"
-        >
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-          </svg>
-          Shared
-        </Link>
+
+      <nav className="flex-1 space-y-2 p-4">
+        {navLinks.map((link, index) => (
+          <Link
+            href={link.href}
+            key={index}
+            className={`flex items-center gap-2 rounded-md px-3 py-2 text-base font-medium text-gray-700 transition-all duration-300 hover:bg-purple-100 hover:text-purple-800 ${pathName === link.href ? "bg-purple-100 text-purple-800" : ""}`}
+          >
+            {link.icon}
+            {link.name}
+          </Link>
+        ))}
       </nav>
-      
-      <div className="p-4 border-t border-gray-200">
-        <button className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900">
+
+      <div className="border-t border-gray-200 p-4">
+        {/* <button className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900">
           <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           Profile
-        </button>
-        
-        <button className="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 hover:text-red-700 mt-2">
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Sign Out
+        </button> */}
+
+        <button className="mt-2 flex w-full items-center gap-1 rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 hover:text-red-700">
+          <IconLogout /> Sign Out
         </button>
       </div>
     </aside>
   );
 }
+
+export const navLinks = [
+  {
+    name: "All Content",
+    href: "/",
+    icon: <IconLayoutDashboard className="h-7 w-7" />,
+  },
+  {
+    name: "Tweets",
+    href: "/tweets",
+    icon: <IconBrandX className="h-7 w-7" />,
+  },
+  {
+    name: "Videos",
+    href: "/videos",
+    icon: <IconBrandYoutube className="h-7 w-7" />,
+  },
+  {
+    name: "Documents",
+    href: "/documents",
+    icon: <IconFileText className="h-7 w-7" />,
+  },
+  {
+    name: "Links",
+    href: "/links",
+    icon: <IconLink className="h-7 w-7" />,
+  },
+  {
+    name: "Tags",
+    href: "/tags",
+    icon: <IconHash className="h-7 w-7" />,
+  },
+];

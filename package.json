@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tabler/icons-react": "^3.34.1",
     "bcrypt": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0",

@@ -1,8 +1,10 @@
 "use client";
 import { ReactNode, useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import AddContentModal, { ContentFormData } from "./AddContentModal";
+import AddContentModal from "./AddContentModal";
 import { IconMenu2, IconPlus, IconShare } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { ContentFormData } from "@/types/content";
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,10 +13,11 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleAddContent = (data: ContentFormData) => {
-    console.log("New content:", data);
-    // TODO: Integrate with your API
+  const handleContentSuccess = () => {
+    // Invalidate content query to refresh the list
+    queryClient.invalidateQueries({ queryKey: ["content"] });
   };
 
   useEffect(() => {
@@ -103,7 +106,7 @@ export default function Layout({ children }: LayoutProps) {
       <AddContentModal
         isOpen={isAddContentModalOpen}
         onClose={() => setIsAddContentModalOpen(false)}
-        onSubmit={handleAddContent}
+        onSuccess={handleContentSuccess}
       />
     </div>
   );

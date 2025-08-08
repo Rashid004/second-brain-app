@@ -94,7 +94,11 @@ export async function PATCH(
       );
     }
 
-    if (body.link) {
+    if (
+      body.link &&
+      !body.link.includes("<iframe") &&
+      !body.link.includes("<blockquote")
+    ) {
       try {
         new URL(body.link);
       } catch {
@@ -169,11 +173,18 @@ export async function GET(
     }
 
     const content = await Content.findById(contentId)
-      .populate("user", "userName email")
-      .lean();
+      .populate("user", "userName email");
 
     if (!content) {
       return NextResponse.json({ error: "Content not found" }, { status: 404 });
+    }
+
+    // Ensure user can only access their own content
+    if (content.user.toString() !== user._id.toString()) {
+      return NextResponse.json(
+        { error: "Unauthorized: You can only access your own content" },
+        { status: 403 },
+      );
     }
 
     return NextResponse.json(

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const user = await protectedRoute(req);
     await connectDB();
     const body = await req.json();
-    const { link, title, contentType, description, tags } = body;
+    const { link, title, contentType, description, tags, embedInfo } = body;
 
     if (!link || !title || !contentType || !description) {
       return NextResponse.json(
@@ -20,13 +20,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    try {
-      new URL(link);
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid URL format" },
-        { status: 400 },
-      );
+    if (!link.includes("<iframe") && !link.includes("<blockquote")) {
+      try {
+        new URL(link);
+      } catch {
+        return NextResponse.json(
+          { error: "Invalid URL format" },
+          { status: 400 },
+        );
+      }
     }
 
     const newContent = await Content.create({
@@ -35,6 +37,7 @@ export async function POST(req: NextRequest) {
       contentType,
       description,
       tags: tags || [],
+      embedInfo: embedInfo || undefined,
       user: user._id,
     });
 
@@ -87,25 +90,22 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
     const contentType = searchParams.get("contentType");
     const limit = parseInt(searchParams.get("limit") || "10");
     const page = parseInt(searchParams.get("page") || "1");
 
-    const filter: any = {};
-    if (userId) filter.user = userId;
+    const filter: any = {
+      user: user._id,
+    };
     if (contentType) filter.contentType = contentType;
 
     const skip = (page - 1) * limit;
-
-    console.log("Fetching content with filter:", filter);
 
     const content = await Content.find(filter)
       .populate("user", "userName email")
       .sort({ createdAt: -1 })
       .limit(limit)
-      .skip(skip)
-      .lean(); // Use lean() for better performance
+      .skip(skip);
 
     const total = await Content.countDocuments(filter);
 

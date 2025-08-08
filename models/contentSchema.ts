@@ -24,6 +24,15 @@ const contentSchema = new Schema<IContent>(
       type: [String],
       default: [],
     },
+    embedInfo: {
+      type: {
+        type: String,
+        enum: ['youtube', 'twitter', 'iframe', 'image', 'link'],
+      },
+      embedUrl: String,
+      thumbnail: String,
+      title: String,
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

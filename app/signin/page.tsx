@@ -1,7 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IconEye, IconEyeOff, IconMail, IconLock } from "@tabler/icons-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { signIn, isAuthenticated } from "@/service/auth";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,10 +12,42 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push("/");
+    }
+  }, [router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign in:", formData);
+    setError("");
+
+    if (!formData.email || !formData.password) {
+      setError("Email and password are required");
+      toast.error("Email and password are required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await signIn(formData);
+      toast.success("Login successful!");
+      router.push("/");
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
+        toast.error(error.response.data.error);
+      } else {
+        setError("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +76,12 @@ export default function SignIn() {
               Enter your credentials to access your account
             </p>
           </div>
+
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
@@ -107,9 +148,10 @@ export default function SignIn() {
             {/* Sign In Button */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-purple-600 py-3 font-medium text-white transition-all duration-200 hover:bg-purple-700 focus:ring-4 focus:ring-purple-200"
+              disabled={loading}
+              className="w-full rounded-lg bg-purple-600 py-3 font-medium text-white transition-all duration-200 hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 

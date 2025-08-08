@@ -16,7 +16,6 @@ export default function ContentGrid({
     <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       {(title || description) && (
         <div className="relative">
-          {/* Background decoration - smaller on mobile */}
           <div className="absolute inset-0 scale-105 -rotate-1 transform rounded-xl bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 opacity-30 sm:rounded-2xl sm:opacity-50 lg:rounded-3xl"></div>
 
           {/* Content */}
@@ -56,9 +55,7 @@ export default function ContentGrid({
         </div>
       )}
 
-      {/* Grid with enhanced styling */}
       <div className="relative">
-        {/* Grid background pattern - hidden on mobile for cleaner look */}
         <div className="absolute inset-0 opacity-0 sm:opacity-5">
           <div
             className="absolute inset-0"

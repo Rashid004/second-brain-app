@@ -16,6 +16,40 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Embedded content styles */
+.twitter-embed blockquote {
+  margin: 0 !important;
+  padding: 12px !important;
+  border-left: 4px solid #1d9bf0 !important;
+  background-color: #f8fafc !important;
+  border-radius: 8px !important;
+}
+
+.twitter-embed p {
+  margin: 0 0 8px 0 !important;
+  color: #0f172a !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+.twitter-embed a {
+  color: #1d9bf0 !important;
+  text-decoration: none !important;
+}
+
+.twitter-embed a:hover {
+  text-decoration: underline !important;
+}
+
+.embed-content iframe {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.embed-content blockquote {
+  max-width: 100% !important;
+}
+
 /* Hide scrollbar for all browsers */
 html {
   scrollbar-width: none; /* Firefox */

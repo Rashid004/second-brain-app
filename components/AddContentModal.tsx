@@ -9,6 +9,10 @@ import {
   IconLink,
   IconHash,
 } from "@tabler/icons-react";
+import { addContent } from "@/service/add";
+import { ContentFormData } from "@/types/content";
+import { toast } from "react-toastify";
+import { detectEmbedType, isValidUrl } from "@/utils/embedUtils";
 
 export enum ContentType {
   TEXT = "text",
@@ -20,21 +24,15 @@ export enum ContentType {
 interface AddContentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ContentFormData) => void;
-}
-
-export interface ContentFormData {
-  title: string;
-  description: string;
-  contentType: ContentType;
-  tags: string[];
-  link: string;
+  onSubmit?: (data: ContentFormData) => void;
+  onSuccess?: () => void;
 }
 
 export default function AddContentModal({
   isOpen,
   onClose,
   onSubmit,
+  onSuccess,
 }: AddContentModalProps) {
   const [formData, setFormData] = useState<ContentFormData>({
     title: "",
@@ -42,11 +40,11 @@ export default function AddContentModal({
     contentType: ContentType.TEXT,
     tags: [],
     link: "",
+    embedInfo: undefined,
   });
-
+  const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -59,7 +57,6 @@ export default function AddContentModal({
     };
   }, [isOpen]);
 
-  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setFormData({
@@ -68,15 +65,57 @@ export default function AddContentModal({
         contentType: ContentType.TEXT,
         tags: [],
         link: "",
+        embedInfo: undefined,
       });
       setTagInput("");
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLinkChange = (input: string) => {
+    setFormData((prev) => ({ ...prev, link: input }));
+
+    if (input.trim()) {
+      const embedInfo = detectEmbedType(input);
+      setFormData((prev) => ({ ...prev, embedInfo }));
+
+      if (embedInfo.type === "youtube") {
+        setFormData((prev) => ({ ...prev, contentType: ContentType.VIDEO }));
+      } else if (embedInfo.type === "image") {
+        setFormData((prev) => ({ ...prev, contentType: ContentType.IMAGE }));
+      } else if (embedInfo.type === "twitter") {
+        setFormData((prev) => ({ ...prev, contentType: ContentType.TEXT }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, embedInfo: undefined }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    setLoading(true);
+    try {
+      await addContent(formData);
+      setFormData({
+        title: "",
+        description: "",
+        contentType: ContentType.TEXT,
+        tags: [],
+        link: "",
+        embedInfo: undefined,
+      });
+      setTagInput("");
+      onClose();
+      onSuccess?.();
+      toast.success("Content added successfully!");
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Content could not be added.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addTag = () => {
@@ -96,7 +135,7 @@ export default function AddContentModal({
     }));
   };
 
-  const handleTagKeyPress = (e: React.KeyboardEvent) => {
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
       addTag();
@@ -120,7 +159,6 @@ export default function AddContentModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
@@ -206,23 +244,54 @@ export default function AddContentModal({
             </div>
           </div>
 
-          {/* Link */}
+          {/* Link or Embed Code */}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Link (Optional)
+              Link or Embed Code
             </label>
             <div className="relative">
-              <IconLink className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
-              <input
-                type="url"
+              <IconLink className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
+              <textarea
                 value={formData.link}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, link: e.target.value }))
-                }
-                className="w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
-                placeholder="https://example.com"
+                onChange={(e) => handleLinkChange(e.target.value)}
+                rows={3}
+                className="w-full resize-none rounded-lg border border-gray-300 py-3 pr-4 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                placeholder="Paste URL, YouTube iframe, or Twitter embed code here..."
               />
             </div>
+
+            {/* Embed Preview */}
+            {formData.embedInfo && (
+              <div className="mt-3 rounded-lg bg-gray-50 p-3">
+                <div className="mb-2 flex items-center gap-2 text-sm text-gray-600">
+                  <span className="font-medium">Detected:</span>
+                  <span className="capitalize">{formData.embedInfo.type}</span>
+                  {formData.embedInfo.type === "youtube" && (
+                    <span className="text-red-600">📺</span>
+                  )}
+                  {formData.embedInfo.type === "twitter" && (
+                    <span className="text-blue-500">🐦</span>
+                  )}
+                  {formData.embedInfo.type === "image" && (
+                    <span className="text-green-600">🖼️</span>
+                  )}
+                  {formData.embedInfo.type === "iframe" && (
+                    <span className="text-purple-600">🔗</span>
+                  )}
+                </div>
+                {formData.embedInfo.type === "youtube" &&
+                  formData.embedInfo.embedUrl && (
+                    <div className="mt-2">
+                      <iframe
+                        src={formData.embedInfo.embedUrl}
+                        className="aspect-video w-full max-w-sm rounded border-0"
+                        title="Preview"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    </div>
+                  )}
+              </div>
+            )}
           </div>
 
           {/* Tags */}
@@ -237,7 +306,7 @@ export default function AddContentModal({
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={handleTagKeyPress}
+                  onKeyDown={handleTagKeyDown}
                   className="w-full rounded-lg border border-gray-300 py-3 pr-24 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
                   placeholder="Add a tag"
                 />
@@ -284,9 +353,10 @@ export default function AddContentModal({
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="rounded-lg bg-purple-600 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-700"
             >
-              Add Content
+              {loading ? "Adding..." : "Add Content"}
             </button>
           </div>
         </form>

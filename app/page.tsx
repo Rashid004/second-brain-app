@@ -1,58 +1,112 @@
+"use client";
 import Layout from "@/components/Layout";
 import ContentGrid from "@/components/ContentGrid";
 import ContentCard from "@/components/ContentCard";
+import AuthGuard from "@/components/AuthGuard";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAllContent, deleteContent } from "@/service/content";
+import { toast } from "react-toastify";
 
 export default function Home() {
-  const sampleContent = [
-    {
-      id: "1",
-      title: "Getting Started with Second Brain",
-      content:
-        "Welcome to your Second Brain! This is where you can store and organize all your thoughts, ideas, and knowledge. Start by creating your first post and sharing your insights with the community.",
-      author: "System",
-      createdAt: new Date().toISOString(),
-      tags: ["welcome", "getting-started"],
-    },
-    {
-      id: "2",
-      title: "Tips for Better Content Organization",
-      content:
-        "Use tags effectively to categorize your content. Think of tags as a way to create connections between different pieces of information. This helps you find related content quickly.",
-      author: "System",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      tags: ["organization", "tips", "productivity"],
-    },
-    {
-      id: "3",
-      title: "Sharing Your Knowledge",
-      content:
-        "The best way to learn is to teach others. Share your insights, experiences, and learnings with the community. Every piece of knowledge you share helps others grow.",
-      author: "System",
-      createdAt: new Date(Date.now() - 172800000).toISOString(),
-      tags: ["sharing", "community", "learning"],
-    },
-  ];
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["content"],
+    queryFn: () => getAllContent(),
+  });
+  
+  const queryClient = useQueryClient();
+
+  const handleDelete = async (contentId: string) => {
+    if (confirm("Are you sure you want to delete this content?")) {
+      try {
+        await deleteContent(contentId);
+        queryClient.invalidateQueries({ queryKey: ["content"] });
+        toast.success("Content deleted successfully!");
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Failed to delete content");
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <AuthGuard>
+        <Layout>
+          <ContentGrid
+            title="Welcome to Second Brain"
+            description="Discover, share, and organize your thoughts and knowledge"
+          >
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading content...</p>
+              </div>
+            </div>
+          </ContentGrid>
+        </Layout>
+      </AuthGuard>
+    );
+  }
+
+  if (error) {
+    return (
+      <AuthGuard>
+        <Layout>
+          <ContentGrid
+            title="Welcome to Second Brain"
+            description="Discover, share, and organize your thoughts and knowledge"
+          >
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <p className="text-red-600">Error loading content. Please try again.</p>
+              </div>
+            </div>
+          </ContentGrid>
+        </Layout>
+      </AuthGuard>
+    );
+  }
 
   return (
-    <Layout>
-      <ContentGrid
-        title="Welcome to Second Brain"
-        description="Discover, share, and organize your thoughts and knowledge"
-      >
-        {sampleContent.map((item) => (
-          <ContentCard
-            key={item.id}
-            title={item.title}
-            content={item.content}
-            author={item.author}
-            createdAt={item.createdAt}
-            tags={item.tags}
-            onEdit={() => console.log("Edit:", item.id)}
-            onDelete={() => console.log("Delete:", item.id)}
-            onShare={() => console.log("Share:", item.id)}
-          />
-        ))}
-      </ContentGrid>
-    </Layout>
+    <AuthGuard>
+      <Layout>
+        <ContentGrid
+          title="My Second Brain"
+          description="Your personal knowledge base - all your content in one place"
+        >
+          {data?.content && data.content.length > 0 ? (
+            data.content.map((item) => (
+              <ContentCard
+                key={item._id}
+                id={item._id}
+                title={item.title}
+                content={item.description}
+                author={item.user.userName}
+                createdAt={item.createdAt}
+                tags={item.tags}
+                link={item.link}
+                embedInfo={item.embedInfo}
+                onEdit={() => console.log("Edit:", item._id)}
+                onDelete={() => handleDelete(item._id)}
+                onShare={() => console.log("Share:", item._id)}
+              />
+            ))
+          ) : (
+            <div className="flex justify-center items-center py-12 col-span-full">
+              <div className="text-center space-y-4">
+                <div className="text-6xl">🧠</div>
+                <h3 className="text-xl font-semibold text-gray-800">Your Second Brain is Empty</h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  Start building your personal knowledge base by adding your first piece of content. 
+                  You can add links, YouTube videos, Twitter posts, or any web content!
+                </p>
+                <p className="text-sm text-purple-600 font-medium">
+                  Click "Add Content" above to get started 👆
+                </p>
+              </div>
+            </div>
+          )}
+        </ContentGrid>
+      </Layout>
+    </AuthGuard>
   );
 }

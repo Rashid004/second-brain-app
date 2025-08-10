@@ -11,7 +11,7 @@ export interface ContentResponse {
     description: string;
     tags: string[];
     embedInfo?: {
-      type: "youtube" | "twitter" | "iframe" | "image" | "link";
+      type: "youtube" | "twitter" | "iframe" | "image" | "link" | "document";
       embedUrl?: string;
       thumbnail?: string;
       title?: string;
@@ -35,6 +35,7 @@ export interface ContentResponse {
 
 export const getContent = async (params?: {
   contentType?: string;
+  embedType?: string;
   limit?: number;
   page?: number;
 }): Promise<ContentResponse> => {
@@ -44,6 +45,8 @@ export const getContent = async (params?: {
 
     if (params?.contentType)
       searchParams.append("contentType", params.contentType);
+    if (params?.embedType)
+      searchParams.append("embedType", params.embedType);
     if (params?.limit) searchParams.append("limit", params.limit.toString());
     if (params?.page) searchParams.append("page", params.page.toString());
 

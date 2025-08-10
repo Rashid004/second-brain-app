@@ -1,7 +1,7 @@
 import { Document, Types } from "mongoose";
 
 export interface EmbedInfo {
-  type: 'youtube' | 'twitter' | 'iframe' | 'image' | 'link';
+  type: 'youtube' | 'twitter' | 'iframe' | 'image' | 'link' | 'document';
   embedUrl?: string;
   thumbnail?: string;
   title?: string;

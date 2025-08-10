@@ -32,4 +32,5 @@ linkSchema.pre("save", function (next) {
 });
 
 const LinkModel = mongoose.models.Link || mongoose.model("Link", linkSchema);
+
 export default LinkModel;

@@ -1,7 +1,5 @@
-// Utility functions for handling embedded content
-
 export interface EmbedInfo {
-  type: "youtube" | "twitter" | "iframe" | "image" | "link";
+  type: "youtube" | "twitter" | "iframe" | "image" | "link" | "document";
   embedUrl?: string;
   thumbnail?: string;
   title?: string;
@@ -126,8 +124,9 @@ export const detectEmbedType = (input: string): EmbedInfo => {
       embedUrl: input,
     };
   } catch {
+    // If it's not a valid URL, treat it as document/text content
     return {
-      type: "link",
+      type: "document",
       embedUrl: input,
     };
   }

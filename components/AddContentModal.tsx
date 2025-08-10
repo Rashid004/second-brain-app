@@ -84,10 +84,30 @@ export default function AddContentModal({
         setFormData((prev) => ({ ...prev, contentType: ContentType.IMAGE }));
       } else if (embedInfo.type === "twitter") {
         setFormData((prev) => ({ ...prev, contentType: ContentType.TEXT }));
+      } else if (embedInfo.type === "document") {
+        setFormData((prev) => ({ ...prev, contentType: ContentType.TEXT }));
+      } else if (embedInfo.type === "link") {
+        setFormData((prev) => ({ ...prev, contentType: ContentType.TEXT }));
       }
     } else {
       setFormData((prev) => ({ ...prev, embedInfo: undefined }));
     }
+  };
+
+  const handleContentTypeChange = (type: ContentType) => {
+    setFormData((prev) => {
+      let updatedData = { ...prev, contentType: type };
+      
+      // If user manually selects TEXT type, set embedInfo to document
+      if (type === ContentType.TEXT && (!prev.embedInfo || prev.embedInfo.type === "link")) {
+        updatedData.embedInfo = {
+          type: "document",
+          embedUrl: prev.link || "",
+        };
+      }
+      
+      return updatedData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -228,9 +248,7 @@ export default function AddContentModal({
                 <button
                   key={type}
                   type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, contentType: type }))
-                  }
+                  onClick={() => handleContentTypeChange(type)}
                   className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                     formData.contentType === type
                       ? "border-purple-500 bg-purple-50 text-purple-700"
@@ -277,6 +295,12 @@ export default function AddContentModal({
                   )}
                   {formData.embedInfo.type === "iframe" && (
                     <span className="text-purple-600">🔗</span>
+                  )}
+                  {formData.embedInfo.type === "link" && (
+                    <span className="text-blue-600">🔗</span>
+                  )}
+                  {formData.embedInfo.type === "document" && (
+                    <span className="text-gray-600">📄</span>
                   )}
                 </div>
                 {formData.embedInfo.type === "youtube" &&

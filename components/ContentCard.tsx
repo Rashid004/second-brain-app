@@ -70,7 +70,7 @@ export default function ContentCard({
         <div className="flex space-x-2 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
           {onShare && (
             <button
-              // onClick={onShare}
+              onClick={onShare}
               className="rounded-md p-1 text-gray-400 transition-all duration-200 hover:scale-110 hover:bg-blue-50 hover:text-blue-600"
               title="Share"
             >
@@ -93,7 +93,6 @@ export default function ContentCard({
       <p className="mb-4 line-clamp-3 text-xs leading-relaxed text-gray-600 sm:text-sm">
         {content}
       </p>
-
       {/* Embedded Content */}
       {embedInfo && embedInfo.type === "youtube" && embedInfo.embedUrl && (
         <div className="mb-4 overflow-hidden rounded-lg">
@@ -106,7 +105,6 @@ export default function ContentCard({
           />
         </div>
       )}
-
       {embedInfo && embedInfo.type === "image" && (
         <div className="mb-4 overflow-hidden rounded-lg">
           <img
@@ -120,7 +118,6 @@ export default function ContentCard({
           />
         </div>
       )}
-
       {embedInfo && embedInfo.type === "twitter" && (
         <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
@@ -149,7 +146,6 @@ export default function ContentCard({
           )}
         </div>
       )}
-
       {embedInfo && embedInfo.type === "iframe" && (
         <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-600">
@@ -165,7 +161,6 @@ export default function ContentCard({
           />
         </div>
       )}
-
       {link && (!embedInfo || embedInfo.type === "link") && (
         <div className="mb-4 rounded-lg bg-gray-50 p-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -181,7 +176,6 @@ export default function ContentCard({
           </div>
         </div>
       )}
-
       {tags.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {tags.map((tag, index) => (
@@ -194,7 +188,6 @@ export default function ContentCard({
           ))}
         </div>
       )}
-
       <div className="mt-auto flex items-center justify-between text-xs text-gray-500">
         {author && <span>By {author}</span>}
         <span>{new Date(createdAt).toLocaleDateString()}</span>

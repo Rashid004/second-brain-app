@@ -1,20 +1,22 @@
-import connectDB from "@/lib/db";
+// /app/api/content/brain/share/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import connectDB from "@/lib/db";
 import { protectedRoute } from "@/middleware/authMiddleware";
 import { generateShareHash } from "@/utils/hashUtils";
 import Link from "@/models/linkSchema";
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await protectedRoute(req);
     await connectDB();
+    const user = await protectedRoute(req);
+    const { action } = await req.json();
 
-    const body = await req.json();
-    const { action } = body;
+    if (!user || !user._id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (action === "create") {
-      // Check if user already has a share link
-      const existingLink = await Link.findOne({ userId: user._id });
+      let existingLink = await Link.findOne({ userId: user._id });
 
       if (existingLink && existingLink.isActive) {
         return NextResponse.json(
@@ -29,29 +31,30 @@ export async function POST(req: NextRequest) {
 
       const hash = generateShareHash();
 
-      // Create or update link
-      const shareLink = existingLink
-        ? await Link.findByIdAndUpdate(
-            existingLink._id,
-            { hash, isActive: true, updatedAt: new Date() },
-            { new: true },
-          )
-        : await Link.create({
-            userId: user._id,
-            hash,
-            isActive: true,
-          });
+      if (existingLink) {
+        existingLink.hash = hash;
+        existingLink.isActive = true;
+        existingLink.updatedAt = new Date();
+        await existingLink.save();
+      } else {
+        existingLink = await Link.create({
+          userId: user._id,
+          hash,
+          isActive: true,
+        });
+      }
 
       return NextResponse.json(
         {
           message: "Brain shared successfully",
-          shareLink: `${process.env.NEXT_PUBLIC_APP_URL}/shared/${shareLink.hash}`,
-          hash: shareLink.hash,
+          shareLink: `${process.env.NEXT_PUBLIC_APP_URL}/shared/${existingLink.hash}`,
+          hash: existingLink.hash,
         },
         { status: 201 },
       );
-    } else if (action === "delete") {
-      // Deactivate share link
+    }
+
+    if (action === "delete") {
       const result = await Link.findOneAndUpdate(
         { userId: user._id },
         { isActive: false, updatedAt: new Date() },
@@ -69,75 +72,63 @@ export async function POST(req: NextRequest) {
         { message: "Brain share removed successfully" },
         { status: 200 },
       );
-    } else {
-      return NextResponse.json(
-        { error: "Action must be 'create' or 'delete'" },
-        { status: 400 },
-      );
-    }
-  } catch (error) {
-    console.error("Share brain error:", error);
-
-    if (
-      error instanceof Error &&
-      (error.message === "Access token required" ||
-        error.message === "Token expired" ||
-        error.message === "Invalid token" ||
-        error.message === "User not found")
-    ) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json(
-      { error: "Failed to share brain" },
-      { status: 500 },
+      { error: "Invalid action. Use 'create' or 'delete'." },
+      { status: 400 },
     );
+  } catch (error) {
+    console.error("Error in share route:", error);
+
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
+
+    const status =
+      message === "Access token required" ||
+      message === "Token expired" ||
+      message === "Invalid token" ||
+      message === "User not found"
+        ? 401
+        : 500;
+
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await protectedRoute(req);
     await connectDB();
+    const user = await protectedRoute(req);
 
-    // Get user's share status
-    const shareLink = await Link.findOne({ userId: user._id, isActive: true });
+    if (!user || !user._id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const link = await Link.findOne({
+      userId: user._id,
+      isActive: true,
+    });
 
     return NextResponse.json(
       {
-        message: "Share status retrieved successfully",
-        isShared: !!shareLink,
-        shareLink: shareLink?.hash
-          ? `${process.env.NEXT_PUBLIC_APP_URL}/shared/${shareLink.hash}`
+        message: "Share status retrieved",
+        isShared: !!link,
+        hash: link?.hash || null,
+        shareLink: link
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/shared/${link.hash}`
           : null,
-        hash: shareLink?.hash || null,
       },
       { status: 200 },
     );
   } catch (error) {
-    console.error("Get share status error:", error);
+    console.error("Error getting share status:", error);
 
-    if (
-      error instanceof Error &&
-      (error.message === "Access token required" ||
-        error.message === "Token expired" ||
-        error.message === "Invalid token" ||
-        error.message === "User not found")
-    ) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to retrieve share status";
 
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json(
-      { error: "Failed to get share status" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

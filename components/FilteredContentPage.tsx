@@ -5,21 +5,41 @@ import ContentCard from "@/components/ContentCard";
 import AuthGuard from "@/components/AuthGuard";
 import DeleteModal from "@/components/DeleteModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAllContent, deleteContent } from "@/service/content";
+import { getContent, deleteContent } from "@/service/content";
 import { toast } from "react-toastify";
 import { useState } from "react";
 
-export default function Home() {
+interface FilteredContentPageProps {
+  contentType: string;
+  title: string;
+  description: string;
+  emptyIcon: string;
+  emptyTitle: string;
+  emptyDescription: string;
+}
+
+export default function FilteredContentPage({
+  contentType,
+  title,
+  description,
+  emptyIcon,
+  emptyTitle,
+  emptyDescription,
+}: FilteredContentPageProps) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["content"],
-    queryFn: () => getAllContent(),
+    queryKey: ["content", contentType],
+    queryFn: () => getContent({ embedType: contentType }),
   });
-  
+
   const queryClient = useQueryClient();
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; contentId: string | null; isDeleting: boolean }>({ 
-    isOpen: false, 
-    contentId: null, 
-    isDeleting: false 
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    contentId: string | null;
+    isDeleting: boolean;
+  }>({
+    isOpen: false,
+    contentId: null,
+    isDeleting: false,
   });
 
   const handleDeleteClick = (contentId: string) => {
@@ -28,17 +48,17 @@ export default function Home() {
 
   const handleConfirmDelete = async () => {
     if (!deleteModal.contentId) return;
-    
-    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
-    
+
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
+
     try {
       await deleteContent(deleteModal.contentId);
-      queryClient.invalidateQueries({ queryKey: ["content"] });
+      queryClient.invalidateQueries({ queryKey: ["content", contentType] });
       toast.success("Content deleted successfully!");
       setDeleteModal({ isOpen: false, contentId: null, isDeleting: false });
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to delete content");
-      setDeleteModal(prev => ({ ...prev, isDeleting: false }));
+      setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
     }
   };
 
@@ -52,13 +72,10 @@ export default function Home() {
     return (
       <AuthGuard>
         <Layout>
-          <ContentGrid
-            title="Welcome to Second Brain"
-            description="Discover, share, and organize your thoughts and knowledge"
-          >
-            <div className="flex justify-center items-center py-12">
+          <ContentGrid title={title} description={description}>
+            <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent mx-auto"></div>
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
                 <p className="mt-2 text-gray-600">Loading content...</p>
               </div>
             </div>
@@ -72,13 +89,12 @@ export default function Home() {
     return (
       <AuthGuard>
         <Layout>
-          <ContentGrid
-            title="Welcome to Second Brain"
-            description="Discover, share, and organize your thoughts and knowledge"
-          >
-            <div className="flex justify-center items-center py-12">
+          <ContentGrid title={title} description={description}>
+            <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <p className="text-red-600">Error loading content. Please try again.</p>
+                <p className="text-red-600">
+                  Error loading content. Please try again.
+                </p>
               </div>
             </div>
           </ContentGrid>
@@ -90,10 +106,7 @@ export default function Home() {
   return (
     <AuthGuard>
       <Layout>
-        <ContentGrid
-          title="My Second Brain"
-          description="Your personal knowledge base - all your content in one place"
-        >
+        <ContentGrid title={title} description={description}>
           {data?.content && data.content.length > 0 ? (
             data.content.map((item) => (
               <ContentCard
@@ -108,27 +121,27 @@ export default function Home() {
                 embedInfo={item.embedInfo}
                 onEdit={() => console.log("Edit:", item._id)}
                 onDelete={() => handleDeleteClick(item._id)}
-                onShare={() => { }}
+                onShare={() => {}}
               />
             ))
           ) : (
-            <div className="flex justify-center items-center py-12 col-span-full">
-              <div className="text-center space-y-4">
-                <div className="text-6xl">🧠</div>
-                <h3 className="text-xl font-semibold text-gray-800">Your Second Brain is Empty</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  Start building your personal knowledge base by adding your first piece of content. 
-                  You can add links, YouTube videos, Twitter posts, or any web content!
+            <div className="col-span-full flex items-center justify-center py-12">
+              <div className="space-y-4 text-center">
+                <div className="text-6xl">{emptyIcon}</div>
+                <h3 className="text-xl font-semibold text-gray-800">
+                  {emptyTitle}
+                </h3>
+                <p className="mx-auto max-w-md text-gray-600">
+                  {emptyDescription}
                 </p>
-                <p className="text-sm text-purple-600 font-medium">
+                <p className="text-sm font-medium text-purple-600">
                   Click "Add Content" above to get started 👆
                 </p>
               </div>
             </div>
           )}
         </ContentGrid>
-        
-        {/* Delete Modal */}
+
         <DeleteModal
           isOpen={deleteModal.isOpen}
           onClose={handleCloseDeleteModal}

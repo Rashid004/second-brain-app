@@ -27,7 +27,7 @@ const contentSchema = new Schema<IContent>(
     embedInfo: {
       type: {
         type: String,
-        enum: ['youtube', 'twitter', 'iframe', 'image', 'link'],
+        enum: ['youtube', 'twitter', 'iframe', 'image', 'link', 'document'],
       },
       embedUrl: String,
       thumbnail: String,

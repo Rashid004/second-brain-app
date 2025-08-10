@@ -5,9 +5,6 @@ import { randomBytes } from "crypto";
  * @param length - Length of the hash (default: 10)
  * @returns Random hex string
  */
-export const generateShareHash = (length: number = 10): string => {
-  return randomBytes(length).toString("hex");
-};
 
 /**
  * Generate a secure random hash with timestamp
@@ -18,3 +15,9 @@ export const generateUniqueHash = (): string => {
   const random = randomBytes(8).toString("hex");
   return `${timestamp}-${random}`;
 };
+
+import crypto from "crypto";
+
+export function generateShareHash(): string {
+  return crypto.randomBytes(6).toString("hex");
+}

@@ -5,11 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await connectDB();
-    const hash = params.id;
+    const { id: hash } = await params;
 
     const link = await LinkModel.findOne({ hash, isActive: true });
 

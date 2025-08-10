@@ -10,9 +10,10 @@ import {
   IconHash,
 } from "@tabler/icons-react";
 import { addContent } from "@/service/add";
+import { getContentById, updateContent } from "@/service/content";
 import { ContentFormData } from "@/types/content";
 import { toast } from "react-toastify";
-import { detectEmbedType, isValidUrl } from "@/utils/embedUtils";
+import { detectEmbedType } from "@/utils/embedUtils";
 
 export enum ContentType {
   TEXT = "text",
@@ -26,6 +27,8 @@ interface AddContentModalProps {
   onClose: () => void;
   onSubmit?: (data: ContentFormData) => void;
   onSuccess?: () => void;
+  contentId?: string;
+  isEditMode?: boolean;
 }
 
 export default function AddContentModal({
@@ -33,6 +36,8 @@ export default function AddContentModal({
   onClose,
   onSubmit,
   onSuccess,
+  contentId,
+  isEditMode = false,
 }: AddContentModalProps) {
   const [formData, setFormData] = useState<ContentFormData>({
     title: "",
@@ -44,6 +49,7 @@ export default function AddContentModal({
   });
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,17 +65,49 @@ export default function AddContentModal({
 
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        title: "",
-        description: "",
-        contentType: ContentType.TEXT,
-        tags: [],
-        link: "",
-        embedInfo: undefined,
-      });
-      setTagInput("");
+      if (isEditMode && contentId && !initialDataLoaded) {
+        loadContentData();
+      } else if (!isEditMode) {
+        resetFormData();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, isEditMode, contentId, initialDataLoaded]);
+
+  const resetFormData = () => {
+    setFormData({
+      title: "",
+      description: "",
+      contentType: ContentType.TEXT,
+      tags: [],
+      link: "",
+      embedInfo: undefined,
+    });
+    setTagInput("");
+    setInitialDataLoaded(false);
+  };
+
+  const loadContentData = async () => {
+    try {
+      setLoading(true);
+      const response = await getContentById(contentId!);
+      const content = response.content;
+
+      setFormData({
+        title: content.title,
+        description: content.description,
+        contentType: content.contentType,
+        tags: content.tags || [],
+        link: content.link || "",
+        embedInfo: content.embedInfo || undefined,
+      });
+      setInitialDataLoaded(true);
+    } catch (error: any) {
+      toast.error("Failed to load content data");
+      console.error("Error loading content:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLinkChange = (input: string) => {
     setFormData((prev) => ({ ...prev, link: input }));
@@ -97,15 +135,18 @@ export default function AddContentModal({
   const handleContentTypeChange = (type: ContentType) => {
     setFormData((prev) => {
       let updatedData = { ...prev, contentType: type };
-      
+
       // If user manually selects TEXT type, set embedInfo to document
-      if (type === ContentType.TEXT && (!prev.embedInfo || prev.embedInfo.type === "link")) {
+      if (
+        type === ContentType.TEXT &&
+        (!prev.embedInfo || prev.embedInfo.type === "link")
+      ) {
         updatedData.embedInfo = {
           type: "document",
           embedUrl: prev.link || "",
         };
       }
-      
+
       return updatedData;
     });
   };
@@ -114,24 +155,24 @@ export default function AddContentModal({
     e.preventDefault();
     setLoading(true);
     try {
-      await addContent(formData);
-      setFormData({
-        title: "",
-        description: "",
-        contentType: ContentType.TEXT,
-        tags: [],
-        link: "",
-        embedInfo: undefined,
-      });
-      setTagInput("");
+      if (isEditMode && contentId) {
+        await updateContent(contentId, formData);
+      } else {
+        await addContent(formData);
+        toast.success("Content added successfully!");
+      }
+      resetFormData();
       onClose();
       onSuccess?.();
-      toast.success("Content added successfully!");
     } catch (error: any) {
       if (error.response?.data?.error) {
         toast.error(error.response.data.error);
       } else {
-        toast.error("Content could not be added.");
+        toast.error(
+          isEditMode
+            ? "Content could not be updated."
+            : "Content could not be added.",
+        );
       }
     } finally {
       setLoading(false);
@@ -189,7 +230,7 @@ export default function AddContentModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 p-6">
           <h2 className="text-2xl font-semibold text-gray-900">
-            Add New Content
+            {isEditMode ? "Edit Content" : "Add New Content"}
           </h2>
           <button
             onClick={onClose}
@@ -380,7 +421,13 @@ export default function AddContentModal({
               disabled={loading}
               className="rounded-lg bg-purple-600 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-700"
             >
-              {loading ? "Adding..." : "Add Content"}
+              {loading
+                ? isEditMode
+                  ? "Updating..."
+                  : "Adding..."
+                : isEditMode
+                  ? "Update Content"
+                  : "Add Content"}
             </button>
           </div>
         </form>

@@ -5,6 +5,7 @@ import {
   IconExternalLink,
   IconPhoto,
   IconBrandX,
+  IconEdit,
 } from "@tabler/icons-react";
 import { EmbedInfo } from "@/types/content";
 
@@ -19,7 +20,6 @@ interface ContentCardProps {
   embedInfo?: EmbedInfo;
   onEdit?: () => void;
   onDelete?: () => void;
-  onShare?: () => void;
 }
 
 export default function ContentCard({
@@ -33,7 +33,6 @@ export default function ContentCard({
   embedInfo,
   onEdit,
   onDelete,
-  onShare,
 }: ContentCardProps) {
   const getContentIcon = () => {
     if (!embedInfo)
@@ -60,6 +59,7 @@ export default function ContentCard({
         );
     }
   };
+
   return (
     <div className="group w-full rounded-2xl border border-gray-200/50 bg-white/90 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-purple-200/50 hover:bg-white hover:shadow-xl hover:shadow-purple-100/50 sm:p-6 sm:hover:-translate-y-1">
       <div className="mb-4 flex items-start justify-between">
@@ -68,13 +68,13 @@ export default function ContentCard({
           <span>{title}</span>
         </h3>
         <div className="flex space-x-2 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
-          {onShare && (
+          {onEdit && (
             <button
-              onClick={onShare}
+              onClick={onEdit}
               className="rounded-md p-1 text-gray-400 transition-all duration-200 hover:scale-110 hover:bg-blue-50 hover:text-blue-600"
-              title="Share"
+              title="Edit"
             >
-              <IconShare className="h-4 w-4 sm:h-5 sm:w-5" />
+              <IconEdit className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           )}
 

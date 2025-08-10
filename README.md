@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧠 Second Brain
+
+A personal knowledge management app to save, organize, and share your thoughts and content.
+
+## What is this?
+
+Second Brain is like having a digital notebook where you can:
+- Save interesting links and articles
+- Store YouTube videos you want to watch later  
+- Keep Twitter posts that inspire you
+- Organize everything with tags
+- Share your brain with others
+
+## Features
+
+✨ **Save Any Content**
+- YouTube videos
+- Twitter posts
+- Articles and links
+- Images
+- Documents
+
+📱 **Works Everywhere**
+- Mobile-friendly design
+- Fast and responsive
+- Works on any device
+
+🏷️ **Stay Organized**
+- Add tags to your content
+- Filter by content type
+- Search through everything
+- Easy to find what you need
+
+🔗 **Share Your Brain**
+- Create shareable links
+- Let others explore your knowledge
+- Public or private sharing
+
+## How to Use
+
+1. **Sign Up** - Create your account
+2. **Add Content** - Click "Add Content" and paste any link
+3. **Organize** - Add tags and descriptions
+4. **Share** - Generate a link to share your brain
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React, TailwindCSS
+- **Backend**: Node.js, MongoDB
+- **Auth**: JWT tokens
+- **Database**: MongoDB with Mongoose
 
 ## Getting Started
 
-First, run the development server:
-
+1. Clone the repo
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url>
+cd second-brain-webapp
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables
+```bash
+cp .env.example .env.local
+# Add your MongoDB connection string
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the app
+```bash
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+├── app/                 # Next.js pages and API routes
+├── components/          # React components
+├── models/             # MongoDB schemas
+├── service/            # API service functions
+├── middleware/         # Auth middleware
+├── lib/                # Database connection
+└── types/              # TypeScript types
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Feel free to submit issues and pull requests!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License - feel free to use this project however you want.
+
+---
+
+Built with ❤️ for organizing digital knowledge

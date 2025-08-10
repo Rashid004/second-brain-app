@@ -45,8 +45,7 @@ export const getContent = async (params?: {
 
     if (params?.contentType)
       searchParams.append("contentType", params.contentType);
-    if (params?.embedType)
-      searchParams.append("embedType", params.embedType);
+    if (params?.embedType) searchParams.append("embedType", params.embedType);
     if (params?.limit) searchParams.append("limit", params.limit.toString());
     if (params?.page) searchParams.append("page", params.page.toString());
 
@@ -83,6 +82,34 @@ export const deleteContent = async (contentId: string) => {
   try {
     const token = getAuthToken();
     const response = await axios.delete(`/api/content/${contentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getContentById = async (contentId: string) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(`/api/content/${contentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateContent = async (contentId: string, body: any) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.patch(`/api/content/${contentId}`, body, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

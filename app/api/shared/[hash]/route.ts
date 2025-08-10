@@ -5,12 +5,12 @@ import Content from "@/models/contentSchema";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { hash: string } }
+  { params }: { params: Promise<{ hash: string }> }
 ) {
   try {
     await connectDB();
     
-    const { hash } = params;
+    const { hash } = await params;
 
     // Find the link by hash
     const shareLink = await Link.findOne({ hash, isActive: true });

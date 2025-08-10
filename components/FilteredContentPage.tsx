@@ -121,7 +121,6 @@ export default function FilteredContentPage({
                 embedInfo={item.embedInfo}
                 onEdit={() => console.log("Edit:", item._id)}
                 onDelete={() => handleDeleteClick(item._id)}
-                onShare={() => {}}
               />
             ))
           ) : (

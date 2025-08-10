@@ -17,7 +17,6 @@ const RootLayoutClient = ({ children }: { children: React.ReactNode }) => {
         draggable
         theme="light"
       />
-      ;
     </>
   );
 };

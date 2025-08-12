@@ -48,7 +48,7 @@ export default function SharedBrainPage() {
       try {
         setLoading(true);
         const response = await fetch(`/api/shared/${hash}`);
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to load shared content");
@@ -70,9 +70,9 @@ export default function SharedBrainPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
           <p className="text-gray-600">Loading shared brain...</p>
         </div>
       </div>
@@ -81,16 +81,18 @@ export default function SharedBrainPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="text-6xl mb-4">🔗</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Link Not Found</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link 
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="mx-auto max-w-md p-8 text-center">
+          <div className="mb-4 text-6xl">🔗</div>
+          <h1 className="mb-2 text-2xl font-bold text-gray-800">
+            Link Not Found
+          </h1>
+          <p className="mb-6 text-gray-600">{error}</p>
+          <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-3 text-white transition-colors hover:bg-purple-700"
           >
-            <IconArrowLeft className="w-4 h-4" />
+            <IconArrowLeft className="h-4 w-4" />
             Go to Brainly
           </Link>
         </div>
@@ -100,11 +102,11 @@ export default function SharedBrainPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <IconBrain className="w-8 h-8 text-purple-600" />
+              <IconBrain className="h-8 w-8 text-purple-600" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
                   {data?.owner?.userName}'s Brain
@@ -114,18 +116,18 @@ export default function SharedBrainPage() {
                 </p>
               </div>
             </div>
-            <Link 
+            <Link
               href="/"
-              className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm text-white transition-colors hover:bg-purple-700"
             >
-              <IconArrowLeft className="w-4 h-4" />
+              <IconArrowLeft className="h-4 w-4" />
               Create Your Own
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {data?.content && data.content.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {data.content.map((item) => (
@@ -143,14 +145,12 @@ export default function SharedBrainPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🧠</div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          <div className="py-12 text-center">
+            <div className="mb-4 text-6xl">🧠</div>
+            <h2 className="mb-2 text-xl font-semibold text-gray-800">
               This Brain is Empty
             </h2>
-            <p className="text-gray-600">
-              No content has been shared yet.
-            </p>
+            <p className="text-gray-600">No content has been shared yet.</p>
           </div>
         )}
       </main>

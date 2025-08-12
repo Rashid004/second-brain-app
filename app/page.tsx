@@ -98,7 +98,7 @@ export default function Home() {
             description="Discover, share, and organize your thoughts and knowledge"
           >
             <div className="flex items-center justify-center py-12">
-              <div className="text-center">
+              <div className="flex flex-col items-center text-center">
                 <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
                 <p className="mt-2 text-gray-600">Loading content...</p>
               </div>
@@ -193,7 +193,9 @@ export default function Home() {
         {/* Confirmation Modal */}
         <ConfirmationModal
           isOpen={confirmationModal.isOpen}
-          onClose={() => setConfirmationModal({ isOpen: false, title: "", message: "" })}
+          onClose={() =>
+            setConfirmationModal({ isOpen: false, title: "", message: "" })
+          }
           title={confirmationModal.title}
           message={confirmationModal.message}
           type="success"

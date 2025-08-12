@@ -12,6 +12,20 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Second Brain",
   description: "Second Brain is a place for you to share your thoughts.",
+  openGraph: {
+    type: "website",
+    url: "https://second-brain-beta-nine.vercel.app/",
+    title: "Second Brain",
+    description: "Second Brain is a place for you to share your thoughts.",
+    images: [
+      {
+        url: "https://second-brain-beta-nine.vercel.app/brainly.png",
+        width: 1200,
+        height: 630,
+        alt: "Second Brain",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
